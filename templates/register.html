@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>新規登録</h2>
+    <form method="post" style="display:grid; gap:10px; max-width:420px;">
+      <label>メール<br><input type="email" name="email" required class="btn" style="width:100%; background:#0f172a; border:1px solid #2a3b5f; border-radius:10px; padding:8px;"></label>
+      <label>パスワード<br><input type="password" name="password" required class="btn" style="width:100%; background:#0f172a; border:1px solid #2a3b5f; border-radius:10px; padding:8px;"></label>
+      <div>
+        <button class="btn">登録</button>
+        <a class="btn" href="/login">ログインへ</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="home-wrapper">
+    <div class="card home-card">
+      <h1>💖 GiftLogへようこそ 💖</h1>
+      <p>
+        {% if count > 0 %}
+          あなたの登録ギフト件数 🎁：<strong>{{ count }}</strong> 件
+        {% else %}
+          まだギフトは登録されていません。まずは追加してみましょう 🎀
+        {% endif %}
+      </p>
+      <p>
+        <a class="btn primary" href="/gifts">
+          ➕ 一覧ページへ
+        </a>
+      </p>
+    </div>
+  </div>
+{% endblock %}
+

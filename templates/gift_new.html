@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <h2>ギフト追加</h2>
+
+    <form method="post" class="grid cols-2" style="gap:12px;">
+      <!-- タイトル & 日付 -->
+      <label>タイトル*<br>
+        <input name="title" required autofocus autocomplete="off"
+               placeholder="例: バースデーケーキ"
+               value="{{ request.form.get('title','') }}">
+      </label>
+      <label>もらった日<br>
+        <input name="received_date" type="date" autocomplete="off"
+               value="{{ request.form.get('received_date','') }}">
+      </label>
+
+      <!-- 金額 & 送り主 -->
+      <label>金額（円・任意）<br>
+        <input name="amount_yen" type="number" min="0" step="1" inputmode="numeric"
+               placeholder="例: 3000"
+               value="{{ request.form.get('amount_yen','') }}">
+        <span class="small">※ 半角数字。未入力でもOKだよ</span>
+      </label>
+
+      <label>送ってくれた方<br>
+        <select name="giver_id">
+          <option value="">（未選択）</option>
+          {% for g in givers %}
+            <option value="{{ g.id }}"
+              {% if request.form.get('giver_id') and request.form.get('giver_id')|int == g.id %}selected{% endif %}>
+              {{ g.name }}
+            </option>
+          {% endfor %}
+        </select>
+        <span class="small"><a href="{{ url_for('givers') }}">＋ 贈り主を追加</a></span>
+      </label>
+
+      <!-- カテゴリ & 返礼期日 -->
+      <label>カテゴリ<br>
+        <select name="category_id">
+          <option value="">（未選択）</option>
+          {% for c in categories %}
+            <option value="{{ c.id }}"
+              {% if request.form.get('category_id') and request.form.get('category_id')|int == c.id %}selected{% endif %}>
+              {{ c.name }}
+            </option>
+          {% endfor %}
+        </select>
+        <span class="small"><a href="{{ url_for('categories') }}">＋ カテゴリを追加</a></span>
+      </label>
+
+      <label>お返しする日<br>
+        <input name="return_due_date" type="date" autocomplete="off"
+               value="{{ request.form.get('return_due_date','') }}">
+        <span class="small">※ カレンダー出力に使われます</span>
+      </label>
+
+      <!-- チェック類 -->
+      <label><span class="small">ありがとう連絡</span><br>
+        <input type="checkbox" name="thank_you_sent"
+               {% if request.form.get('thank_you_sent') == 'on' %}checked{% endif %}> 済
+      </label>
+      <label><span class="small">お返しOK？</span><br>
+        <input type="checkbox" name="return_done"
+               {% if request.form.get('return_done') == 'on' %}checked{% endif %}> 済
+      </label>
+
+      <!-- メモ -->
+      <label style="grid-column:1/-1;">メモ<br>
+        <textarea name="memo" rows="3"
+                  placeholder="例: とても喜んでいた／お返しは焼き菓子セットにする予定など">{{ request.form.get('memo','') }}</textarea>
+      </label>
+
+      <!-- ボタン -->
+      <div style="grid-column:1/-1; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-search" type="submit" style="flex:1 1 200px;">登録</button>
+        <a class="btn" href="{{ url_for('gifts') }}" style="flex:1 1 200px; text-align:center;">← 一覧へ</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

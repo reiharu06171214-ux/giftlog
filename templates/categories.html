@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+  <!-- 追加フォーム -->
+  <div class="card">
+    <h2>カテゴリの追加</h2>
+    <form method="post" class="grid cols-2" style="gap:10px; align-items:end;">
+      <label>カテゴリ名*<br>
+        <input name="name" placeholder="例: 食品・日用品" required>
+      </label>
+      <div>
+        <button class="btn btn-search" type="submit">➕ 追加</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 一覧テーブル -->
+  <div class="card">
+    <h2>カテゴリ一覧</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>カテゴリ</th>
+          <th style="text-align:right;">ギフト件数</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in categories %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td style="text-align:right;">{{ c.gifts|length }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="2" class="small" style="text-align:center; color:var(--muted);">
+            まだカテゴリが登録されていません。上のフォームから追加してください。
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
