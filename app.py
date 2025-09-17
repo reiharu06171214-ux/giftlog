@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from collections import defaultdict
 
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
@@ -10,6 +10,7 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect, text
+from sqlalchemy.orm import selectinload
 
 # ---------- アプリ設定 ----------
 app = Flask(__name__)
@@ -17,11 +18,12 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")  # 本番�
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///giftlog.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-#（任意：本番のCookieを少し堅く）
+# 本番のCookieを少し堅く
 if os.getenv("FLASK_ENV") == "production":
     app.config.update(
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=True,  # https 前提
     )
 
 db = SQLAlchemy(app)
@@ -97,11 +99,9 @@ def parse_date(s: str | None) -> date | None:
 
 @app.template_filter("yen")
 def yen(n):
-    if n is None:
-        return ""
     try:
-        return f"¥{int(n):,}"
-    except Exception:
+        return f"¥{int(n):,}" if n is not None else ""
+    except (TypeError, ValueError):
         return ""
 
 @app.template_filter("datejp")
@@ -136,6 +136,18 @@ def escape_ics(text: str) -> str:
             .replace(";", "\\;")
     )
 
+def date_from_ymd(form, prefix: str, default: date | None = None) -> date | None:
+    """フォームの 'prefix_year','prefix_month','prefix_day' から date を作る"""
+    try:
+        y = form.get(f"{prefix}_year", type=int)
+        m = form.get(f"{prefix}_month", type=int)
+        d = form.get(f"{prefix}_day", type=int)
+        if y and m and d:
+            return date(y, m, d)
+    except Exception:
+        pass
+    return default
+
 # ---------- ルート ----------
 @app.route("/")
 @login_required
@@ -147,16 +159,31 @@ def home():
 @app.route("/gifts/new", methods=["GET", "POST"])
 @login_required
 def gift_new():
+    today = date.today()
+    years = list(range(today.year - 10, today.year + 10))  # 過去10年〜未来10年
+
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         if not title:
             flash("タイトルは必須だよ！", "error")
             givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
             categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
-            # 入力値を渡して再描画（必要なら request.form をテンプレ側で参照）
             return render_template("gift_new.html", title="ギフト追加",
-                                   givers=givers, categories=categories), 400
+                                   givers=givers, categories=categories,
+                                   today=today, years=years), 400
 
+        # 金額の下限チェック
+        amount_val = request.form.get("amount_yen", type=int)
+        if amount_val is not None and amount_val < 0:
+            flash("金額は0以上で入力してね。", "error")
+            givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
+            categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
+            return render_template("gift_new.html", title="ギフト追加",
+                                   givers=givers, categories=categories,
+                                   today=today, years=years), 400
+
+        received_dt = date_from_ymd(request.form, "received", default=today)
+        return_due = date_from_ymd(request.form, "return_due")
 
         g = Gift(
             user_id=current_user.id,
@@ -164,11 +191,11 @@ def gift_new():
             memo=request.form.get("memo", "").strip(),
             giver_id=request.form.get("giver_id", type=int),
             category_id=request.form.get("category_id", type=int),
-            received_date=parse_date(request.form.get("received_date")) or date.today(),
+            received_date=received_dt,
             thank_you_sent=(request.form.get("thank_you_sent") == "on"),
-            return_due_date=parse_date(request.form.get("return_due_date")),
+            return_due_date=return_due,
             return_done=(request.form.get("return_done") == "on"),
-            amount_yen=request.form.get("amount_yen", type=int)
+            amount_yen=amount_val
         )
         db.session.add(g)
         db.session.commit()
@@ -177,7 +204,9 @@ def gift_new():
 
     givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
     categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
-    return render_template("gift_new.html", title="ギフト追加", givers=givers, categories=categories)
+    return render_template("gift_new.html", title="ギフト追加",
+                           givers=givers, categories=categories,
+                           today=today, years=years)
 
 # 一覧ページ（GET専用）
 @app.route("/gifts", methods=["GET"])
@@ -192,7 +221,15 @@ def gifts():
     max_amount = request.args.get("max_amount", type=int)
     amount_only = request.args.get("amount_only") == "1"
 
-    qset = Gift.query.filter_by(user_id=current_user.id)
+    # N+1対策で関連をまとめてロード
+    qset = (
+        Gift.query.options(
+            selectinload(Gift.giver),
+            selectinload(Gift.category),
+        )
+        .filter_by(user_id=current_user.id)
+    )
+
     if q:
         qset = qset.filter(Gift.title.contains(q))
     if selected_giver_id:
@@ -247,7 +284,23 @@ def gifts():
 def gift_edit(gift_id: int):
     gift = Gift.query.filter_by(id=gift_id, user_id=current_user.id).first_or_404()
     if request.method == "POST":
-        gift.title = request.form.get("title", "").strip() or gift.title
+        # 必須項目の再チェック
+        new_title = request.form.get("title", "").strip()
+        if not new_title:
+            flash("タイトルは必須だよ！", "error")
+            givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
+            categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
+            return render_template("gift_edit.html", title="編集", gift=gift, givers=givers, categories=categories), 400
+
+        # 金額の下限チェック
+        amount_val = request.form.get("amount_yen", type=int)
+        if amount_val is not None and amount_val < 0:
+            flash("金額は0以上で入力してね。", "error")
+            givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
+            categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
+            return render_template("gift_edit.html", title="編集", gift=gift, givers=givers, categories=categories), 400
+
+        gift.title = new_title or gift.title
         gift.memo = request.form.get("memo", "").strip()
         gift.giver_id = request.form.get("giver_id", type=int)
         gift.category_id = request.form.get("category_id", type=int)
@@ -255,14 +308,15 @@ def gift_edit(gift_id: int):
         gift.thank_you_sent = (request.form.get("thank_you_sent") == "on")
         gift.return_due_date = parse_date(request.form.get("return_due_date"))
         gift.return_done = (request.form.get("return_done") == "on")
-        gift.amount_yen = request.form.get("amount_yen", type=int)
+        gift.amount_yen = amount_val
         db.session.commit()
         flash("更新したよ！", "success")
         return redirect(url_for("gifts"))
 
     givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
     categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
-    return render_template("gift_form.html", title="編集", mode="edit", gift=gift, givers=givers, categories=categories)
+    # テンプレ名は gift_edit.html に合わせています（必要なら gift_form.html に変えてOK）
+    return render_template("gift_edit.html", title="ギフト編集", gift=gift, givers=givers, categories=categories)
 
 # 贈り主 & カテゴリ 管理
 @app.route("/givers", methods=["GET", "POST"])
@@ -291,6 +345,40 @@ def categories():
         return redirect(url_for("categories"))
     items = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
     return render_template("categories.html", title="カテゴリ", categories=items)
+
+@app.post("/categories/<int:category_id>/delete")
+@login_required
+def category_delete(category_id: int):
+    # 自分のカテゴリのみ対象
+    cat = Category.query.filter_by(id=category_id, user_id=current_user.id).first_or_404()
+
+    # 紐付くギフトがある場合は削除不可
+    used = Gift.query.filter_by(user_id=current_user.id, category_id=cat.id).count()
+    if used > 0:
+        flash("このカテゴリはギフトに紐付いているため削除できません。先にギフトのカテゴリを変更してください。", "error")
+        return redirect(url_for("categories"))
+
+    db.session.delete(cat)
+    db.session.commit()
+    flash("カテゴリを削除しました。", "success")
+    return redirect(url_for("categories"))
+
+@app.post("/givers/<int:giver_id>/delete")
+@login_required
+def giver_delete(giver_id: int):
+    # 自分の贈り主だけ対象
+    giver = Giver.query.filter_by(id=giver_id, user_id=current_user.id).first_or_404()
+
+    # 紐付くギフトがある場合は削除不可
+    used = Gift.query.filter_by(user_id=current_user.id, giver_id=giver.id).count()
+    if used > 0:
+        flash("この贈り主はギフトに紐付いているため削除できません。先にギフトの贈り主を変更してください。", "error")
+        return redirect(url_for("givers"))
+
+    db.session.delete(giver)
+    db.session.commit()
+    flash("贈り主を削除しました。", "success")
+    return redirect(url_for("givers"))
 
 # 認証
 @app.route("/register", methods=["GET", "POST"])
@@ -361,15 +449,16 @@ def calendar_feed():
         uid = f"giftlog-{g.id}@local"
         summary = f"返礼ToDo: {g.title}"
         desc = f"贈り主: {g.giver.name if g.giver else ''} / カテゴリ: {g.category.name if g.category else ''}"
-        due = fmt(g.return_due_date)
+        due_start = g.return_due_date
+        due_end = g.return_due_date + timedelta(days=1)  # 終日は翌日終わり
         lines += [
             "BEGIN:VEVENT",
             f"UID:{uid}",
             f"DTSTAMP:{now_stamp}",
             f"SUMMARY:{escape_ics(summary)}",
             f"DESCRIPTION:{escape_ics(desc)}",
-            f"DTSTART;VALUE=DATE:{due}",
-            f"DTEND;VALUE=DATE:{due}",
+            f"DTSTART;VALUE=DATE:{fmt(due_start)}",
+            f"DTEND;VALUE=DATE:{fmt(due_end)}",
             "END:VEVENT",
         ]
 
@@ -398,7 +487,7 @@ if __name__ == "__main__":
         ensure_amount_column()
 
     debug = os.getenv("FLASK_DEBUG", "1") == "1"
-    # 一時的にルートを表示（デバッグ用。提出時は消してOK）
+    # 一時的にルートを表示（デバッグ用）
     print("=== ROUTES ===")
     for r in app.url_map.iter_rules():
         print(" ", r)

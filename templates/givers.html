@@ -1,30 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-  <!-- 追加フォーム -->
   <div class="card">
     <h2>贈り主の追加</h2>
-    <form method="post" class="grid cols-3" style="gap:10px; align-items:end;">
-      <label>名前*<br>
-        <input name="name" placeholder="例: 田中さん" required>
-      </label>
-      <label>連絡先（任意）<br>
-        <input name="contact" placeholder="メールや住所など">
-      </label>
-      <div>
-        <button class="btn btn-search" type="submit">➕ 追加</button>
+    <form method="post" class="form-inline">
+      <div class="form-group">
+        <label for="giver-name">名前*</label>
+        <input id="giver-name" name="name" placeholder="例: 田中さん" required>
       </div>
+      <div class="form-group">
+        <label for="giver-contact">連絡先（任意）</label>
+        <input id="giver-contact" name="contact" placeholder="メールや住所など">
+      </div>
+      <button class="btn primary" type="submit">➕ 追加</button>
     </form>
   </div>
 
-  <!-- 一覧テーブル -->
   <div class="card">
     <h2>贈り主一覧</h2>
-    <table class="table">
+    <table class="table" aria-label="贈り主一覧">
       <thead>
         <tr>
-          <th>名前</th>
-          <th>連絡先</th>
-          <th style="text-align:right;">ギフト件数</th>
+          <th scope="col">名前</th>
+          <th scope="col">連絡先</th>
+          <th scope="col" class="text-right">ギフト件数</th>
+          <th scope="col" class="text-right">操作</th>
         </tr>
       </thead>
       <tbody>
@@ -32,11 +31,21 @@
         <tr>
           <td>{{ g.name }}</td>
           <td class="small">{{ g.contact or "-" }}</td>
-          <td style="text-align:right;">{{ g.gifts|length }}</td>
+          <td class="text-right">{{ g.gifts|length }}</td>
+          <td class="text-right">
+            <form method="post" action="{{ url_for('giver_delete', giver_id=g.id) }}"
+                  onsubmit="return confirm('「{{ g.name }}」を削除します。よろしいですか？');"
+                  class="inline-form">
+              <button class="btn danger"
+                      {% if g.gifts|length > 0 %}disabled title="この贈り主はギフトに紐付いています"{% endif %}>
+                🗑 削除
+              </button>
+            </form>
+          </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="3" class="small" style="text-align:center; color:var(--muted);">
+          <td colspan="4" class="text-center muted small">
             まだ贈り主が登録されていません。上のフォームから追加してください。
           </td>
         </tr>

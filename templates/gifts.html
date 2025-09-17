@@ -1,90 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
 
-  <!-- 検索フォーム -->
   <div class="card">
     <h2>検索・フィルタ</h2>
-    <form method="get"
-          style="display:grid;gap:10px;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;">
-      <label>キーワード<br>
-        <input name="q" value="{{ q or '' }}" placeholder="タイトルで検索">
-      </label>
+    <form method="get" class="grid" style="grid-template-columns:repeat(6,1fr);gap:10px;">
+      <div class="form-group">
+        <label for="q">キーワード</label>
+        <input id="q" name="q" value="{{ q or '' }}" placeholder="タイトルで検索">
+      </div>
 
-      <label>贈り主<br>
-        <select name="giver_id">
+      <div class="form-group">
+        <label for="giver_id">贈り主</label>
+        <select id="giver_id" name="giver_id">
           <option value="">(すべて)</option>
           {% for g in givers %}
             <option value="{{ g.id }}" {% if selected_giver_id == g.id %}selected{% endif %}>{{ g.name }}</option>
           {% endfor %}
         </select>
-      </label>
+      </div>
 
-      <label>カテゴリ<br>
-        <select name="category_id">
+      <div class="form-group">
+        <label for="category_id">カテゴリ</label>
+        <select id="category_id" name="category_id">
           <option value="">(すべて)</option>
           {% for c in categories %}
             <option value="{{ c.id }}" {% if selected_category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
           {% endfor %}
         </select>
-      </label>
+      </div>
 
-      <label>金額 最小（円）<br>
-        <input name="min_amount" type="number" min="0" step="100"
-               value="{{ min_amount if min_amount is not none else '' }}"
-               placeholder="例: 1000">
-      </label>
+      <div class="form-group">
+        <label for="min_amount">金額 最小（円）</label>
+        <input id="min_amount" name="min_amount" type="number" min="0" step="100"
+               value="{{ min_amount if min_amount is not none else '' }}" placeholder="例: 1000">
+      </div>
 
-      <label>金額 最大（円）<br>
-        <input name="max_amount" type="number" min="0" step="100"
-               value="{{ max_amount if max_amount is not none else '' }}"
-               placeholder="例: 5000">
-      </label>
+      <div class="form-group">
+        <label for="max_amount">金額 最大（円）</label>
+        <input id="max_amount" name="max_amount" type="number" min="0" step="100"
+               value="{{ max_amount if max_amount is not none else '' }}" placeholder="例: 5000">
+      </div>
 
-      <!-- 下段まとめ -->
       <div class="filters-bottom">
-        <label class="chk">
-          <input type="checkbox" name="amount_only" value="1" {% if amount_only %}checked{% endif %}>
-          金額ありのみ
-        </label>
-        <label class="chk">
-          <input type="checkbox" name="todo" value="1" {% if only_todo %}checked{% endif %}>
-          返礼ToDoのみ
-        </label>
+        <div class="chk-group">
+          <label class="chk"><input type="checkbox" name="amount_only" value="1" {% if amount_only %}checked{% endif %}> 金額ありのみ</label>
+          <label class="chk"><input type="checkbox" name="todo" value="1" {% if only_todo %}checked{% endif %}> 返礼ToDoのみ</label>
+        </div>
         <button class="btn btn-search" type="submit">検索</button>
       </div>
     </form>
-
-    <!-- 現在の条件（任意） -->
-    <p class="small" style="margin-top:6px;">
-      条件：
-      {% if q %}「{{ q }}」{% endif %}
-      {% if selected_giver_id %} / 贈り主ID={{ selected_giver_id }}{% endif %}
-      {% if selected_category_id %} / カテゴリID={{ selected_category_id }}{% endif %}
-      {% if min_amount is not none %} / 最小={{ min_amount }}円{% endif %}
-      {% if max_amount is not none %} / 最大={{ max_amount }}円{% endif %}
-      {% if amount_only %} / 金額ありのみ{% endif %}
-      {% if only_todo %} / 返礼ToDoのみ{% endif %}
-    </p>
   </div>
 
-  <!-- 一覧 -->
   <div class="card">
     <h2>ギフト一覧</h2>
-
     {% if gifts %}
       <table class="table" aria-label="ギフト一覧">
         <thead>
           <tr>
-            <th>受領日</th>
-            <th>タイトル</th>
-            <th>贈り主</th>
-            <th>カテゴリ</th>
-            <th>金額</th>
-            <th>返礼目安</th>
-            <th>お礼</th>
-            <th>返礼期日</th>
-            <th>返礼OK</th>
-            <th></th>
+            <th scope="col">受領日</th>
+            <th scope="col">タイトル</th>
+            <th scope="col">贈り主</th>
+            <th scope="col">カテゴリ</th>
+            <th scope="col">金額</th>
+            <th scope="col">返礼目安</th>
+            <th scope="col">お礼</th>
+            <th scope="col">返礼期日</th>
+            <th scope="col">返礼OK</th>
+            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
@@ -100,21 +82,9 @@
                 目安 ~ {{ (g.amount_yen * 0.4)|round|int|yen }}
               {% endif %}
             </td>
-            <td>
-              {% if g.thank_you_sent %}
-                <span class="chip">✅ 済</span>
-              {% else %}
-                <span class="small">未</span>
-              {% endif %}
-            </td>
+            <td>{% if g.thank_you_sent %}<span class="chip">✅ 済</span>{% else %}<span class="small">未</span>{% endif %}</td>
             <td>{{ g.return_due_date|datejp }}</td>
-            <td>
-              {% if g.return_done %}
-                <span class="chip">✅ 済</span>
-              {% else %}
-                <span class="small">未</span>
-              {% endif %}
-            </td>
+            <td>{% if g.return_done %}<span class="chip">✅ 済</span>{% else %}<span class="small">未</span>{% endif %}</td>
             <td><a class="btn" href="{{ url_for('gift_edit', gift_id=g.id) }}">編集</a></td>
           </tr>
           {% endfor %}
@@ -125,7 +95,6 @@
     {% endif %}
   </div>
 
-  <!-- 集計 -->
   {% if gifts %}
     <div class="card">
       <h3>集計</h3>
@@ -144,5 +113,4 @@
       {% endif %}
     </div>
   {% endif %}
-
 {% endblock %}

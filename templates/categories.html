@@ -1,37 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
-  <!-- 追加フォーム -->
   <div class="card">
     <h2>カテゴリの追加</h2>
-    <form method="post" class="grid cols-2" style="gap:10px; align-items:end;">
-      <label>カテゴリ名*<br>
-        <input name="name" placeholder="例: 食品・日用品" required>
-      </label>
-      <div>
-        <button class="btn btn-search" type="submit">➕ 追加</button>
+    <form method="post" class="form-inline">
+      <div class="form-group">
+        <label for="category-name">カテゴリ名*</label>
+        <input id="category-name" name="name" placeholder="例: 食品・日用品" required>
       </div>
+      <button class="btn primary" type="submit">➕ 追加</button>
     </form>
   </div>
 
-  <!-- 一覧テーブル -->
   <div class="card">
     <h2>カテゴリ一覧</h2>
-    <table class="table">
+    <table class="table" aria-label="カテゴリ一覧">
       <thead>
         <tr>
-          <th>カテゴリ</th>
-          <th style="text-align:right;">ギフト件数</th>
+          <th scope="col">カテゴリ</th>
+          <th scope="col" class="text-right">ギフト件数</th>
+          <th scope="col" class="text-right">操作</th>
         </tr>
       </thead>
       <tbody>
         {% for c in categories %}
         <tr>
           <td>{{ c.name }}</td>
-          <td style="text-align:right;">{{ c.gifts|length }}</td>
+          <td class="text-right">{{ c.gifts|length }}</td>
+          <td class="text-right">
+            <form method="post" action="{{ url_for('category_delete', category_id=c.id) }}"
+                  onsubmit="return confirm('「{{ c.name }}」を削除します。よろしいですか？');"
+                  class="inline-form">
+              <button class="btn danger"
+                      {% if c.gifts|length > 0 %}disabled title="このカテゴリはギフトに紐付いています"{% endif %}>
+                🗑 削除
+              </button>
+            </form>
+          </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="2" class="small" style="text-align:center; color:var(--muted);">
+          <td colspan="3" class="text-center muted small">
             まだカテゴリが登録されていません。上のフォームから追加してください。
           </td>
         </tr>

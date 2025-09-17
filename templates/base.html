@@ -4,161 +4,225 @@
   <meta charset="utf-8">
   <title>{{ title or "GiftLog" }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  :root{
-    --bg:#fff6fb;            /* 背景（薄いピンク） */
-    --card:#ffffff;          /* カード背景（白） */
-    --ink:#5b2b3a;           /* 文字（こげピンク） */
-    --muted:#9b6b7a;         /* 補助文字 */
-    --line:#ffd3e6;          /* 枠線（淡ピンク） */
-    --accent:#ff6aa9;        /* アクセント濃ピンク */
-    --accent-2:#ff8fc0;      /* アクセント明るめ */
-    --accent-3:#ffa7cf;      /* アクセント淡め */
-    --ok:#10b981;
-    --warn:#f59e0b;
-    --err:#ef4444;
-    --shadow: 0 8px 24px rgba(255,106,169,.18);
-  }
+  <meta name="color-scheme" content="light">
+  <style>
+    :root{
+      --bg:#fff6fb;
+      --card:#ffffff;
+      --ink:#5b2b3a;
+      --muted:#9b6b7a;
+      --line:#ffd3e6;
+      --accent:#ff6aa9;
+      --accent-2:#ff8fc0;
+      --accent-3:#ffa7cf;
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --err:#ef4444;
+      --shadow: 0 8px 24px rgba(255,106,169,.18);
+    }
 
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background: radial-gradient(1200px 600px at 20% -10%, #ffe6f3 0%, rgba(255,230,243,0) 60%),
-                radial-gradient(1200px 600px at 90% 10%, #ffe1f0 0%, rgba(255,225,240,0) 55%),
-                var(--bg);
-    color:var(--ink);
-    font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial;
-    -webkit-font-smoothing: antialiased;
-  }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, #ffe6f3 0%, rgba(255,230,243,0) 60%),
+        radial-gradient(1200px 600px at 90% 10%, #ffe1f0 0%, rgba(255,225,240,0) 55%),
+        var(--bg);
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  .container{max-width:980px;margin:0 auto;padding:20px}
-  .nav{
-    display:flex; gap:10px; align-items:center; margin-bottom:16px;
-    padding:10px 14px; border-radius:16px;
-    background: linear-gradient(180deg, #ffe9f5, #ffdff0);
-    border:1px solid var(--line);
-    box-shadow: var(--shadow);
-    flex-wrap: wrap;
-  }
-  .logo{font-weight:800; letter-spacing:.2px; color:var(--accent)}
-  .btn{
-    padding:9px 14px; border-radius:999px;
-    background:#fff; border:1px solid var(--line);
-    color:var(--ink); text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-    transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
-  }
-  .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
-  .btn.primary{ background: linear-gradient(180deg, var(--accent-2), var(--accent));
-                color:white; border:1px solid #ff69a6; }
-  .btn.ghost{ background:transparent; border-color: var(--accent-3); color:var(--accent); }
-  .right{margin-left:auto}
+    .container{max-width:980px;margin:0 auto;padding:20px}
 
-  .btn-search {
-     padding:9px 40px; border-radius:999px;
-     background:#fff; border:1px solid var(--line);
-     color:var(--ink); text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-     transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
-  }
+    /* ナビ */
+    nav.nav{
+      display:flex; gap:10px; align-items:center; margin-bottom:16px;
+      padding:10px 14px; border-radius:16px;
+      background: linear-gradient(180deg, #ffe9f5, #ffdff0);
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      flex-wrap: wrap;
+    }
+    .right{margin-left:auto}
+    .btn{
+      padding:9px 14px; border-radius:999px;
+      background:#fff; border:1px solid var(--line);
+      color:var(--ink); text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn.primary{ background: linear-gradient(180deg, var(--accent-2), var(--accent)); color:white; border:1px solid #ff69a6; }
+    .btn.ghost{ background:transparent; border-color: var(--accent-3); color:var(--accent); }
+    .btn.active{ outline: 2px solid var(--accent-2); outline-offset: 1px; }
 
-  .card{
-    background: var(--card); border:1px solid var(--line); border-radius:20px;
-    padding:16px; margin:12px 0; box-shadow: var(--shadow);
-  }
-  h1,h2{ margin:8px 0 12px; }
-  h1{ font-size:28px }
-  h2{ font-size:20px; color:#7a3b52 }
+    /* カード/見出し/通知 */
+    .card{ background: var(--card); border:1px solid var(--line); border-radius:20px; padding:16px; margin:12px 0; box-shadow: var(--shadow); }
+    h1,h2{ margin:8px 0 12px; } h1{ font-size:28px } h2{ font-size:20px; color:#7a3b52 }
+    .alert{padding:10px 12px; border-radius:14px; margin:10px 0; border:1px solid var(--line); background:#fff}
+    .alert.success{border-color:#c7f1df; background:#ecfdf5; color:#065f46}
+    .alert.error{border-color:#f9caca; background:#fff1f2; color:#9f1239}
 
-  .alert{padding:10px 12px; border-radius:14px; margin:10px 0; border:1px solid var(--line); background:#fff}
-  .alert.success{border-color:#c7f1df; background:#ecfdf5; color:#065f46}
-  .alert.error{border-color:#f9caca; background:#fff1f2; color:#9f1239}
+    /* テーブル */
+    .table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px}
+    .table th,.table td{border-bottom:1px solid var(--line); padding:10px; text-align:left}
+    .table thead th{background:#fff0f7; color:#7a3b52; font-weight:700}
+    .table tr:hover td{background:#fff7fb}
 
-  /* テーブル */
-  .table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px}
-  .table th,.table td{border-bottom:1px solid var(--line); padding:10px; text-align:left}
-  .table thead th{background:#fff0f7; color:#7a3b52; font-weight:700}
-  .table tr:hover td{background:#fff7fb}
 
-  /* 入力類 */
-  input,select,textarea{
-    width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line);
-    background:#fff; color:var(--ink); outline:none; transition:border .15s ease, box-shadow .15s ease;
-  }
-  input:focus,select:focus,textarea:focus{
-    border-color: var(--accent-2);
-    box-shadow: 0 0 0 4px rgba(255,138,188,.22);
-  }
-  label{font-size:12px; color:var(--muted)}
-  .small{font-size:12px; color:var(--muted)}
+/* 入力フィールド（ログイン含む） */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background: #fff;                 /* 白背景に固定 */
+  color: var(--ink);                /* 文字色は落ち着いたピンクブラウン */
+  border: 1px solid var(--line);    /* 薄ピンクの枠線 */
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
 
-  /* グリッド補助 */
-  .grid{display:grid; gap:10px}
-  .cols-2{grid-template-columns:1fr 1fr}
-  .cols-3{grid-template-columns:1fr 1fr 1fr}
-  @media (max-width:720px){
-    .cols-2,.cols-3{grid-template-columns:1fr}
-    .nav{flex-wrap:wrap}
-  }
+/* フォーカス時の見た目（選択したらピンクの光） */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 4px rgba(255,138,188,.22);
+  outline: none;
+}
 
-  /* ピル状のタグ */
-  .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
-        background:#fff0f7; color:#7a3b52; border:1px solid var(--line)}
+/* 入力（元の統一ブロック） */
+input,select,textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  outline:none;
+  transition:border .15s ease, box-shadow .15s ease;
+}
 
-  /* 下段のフィルタ行 */
-  .filters-bottom{
-    grid-column: 1 / -1;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    margin-top:4px;
-  }
-  .filters-bottom .chk{ display:inline-flex; align-items:center; gap:6px; }
-  .filters-bottom .btn-search{ margin-left:auto; }
 
-  /* ホーム中央寄せ */
-  .home-card {
-    text-align: center;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 40px 20px;
-  }
-  .home-card h1 { font-size: 28px; color: var(--accent); margin-bottom: 12px; }
-  .home-card p  { font-size: 18px; margin: 8px 0; }
+/* ブラウザ差の吸収：number/date/select が小さく見える問題のケア */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; } /* Firefox */
 
-  .home-wrapper {
-    min-height: 70vh;
-    display: flex; align-items: center; justify-content: center;
-  }
-</style>
+/* date はブラウザで高さが潰れがち → appearance を外して揃える */
+input[type="date"] { appearance: none; -webkit-appearance: none; }
+
+/* select の右側余白（矢印分）を確保して文字が詰まらないように */
+select { padding-right: 36px; }
+
+    /* レイアウト補助 */
+    .grid{display:grid; gap:10px}
+    .cols-2{grid-template-columns:1fr 1fr}
+    .cols-3{grid-template-columns:1fr 1fr 1fr}
+    .text-right{text-align:right}
+    .text-center{text-align:center}
+    .inline-form{display:inline}
+    @media (max-width:720px){
+      .cols-2,.cols-3{grid-template-columns:1fr}
+      nav.nav{flex-wrap:wrap}
+    }
+
+    /* タグ風 */
+    .chip{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:#fff0f7; color:#7a3b52; border:1px solid var(--line)}
+
+    /* 検索フォーム下段（チェック＋ボタン） */
+    .filters-bottom{
+      grid-column: 1 / -1;
+      display:flex; justify-content: space-between; align-items:center;
+      gap:16px; margin-top:8px;
+    }
+    .chk-group{ display:flex; gap:16px; align-items:center; }
+    .chk-group .chk{ display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+    .btn-search { padding:9px 40px; border-radius:999px; background:#fff; border:1px solid var(--line); color:var(--ink); display:inline-flex; align-items:center; gap:6px; transition: transform .06s ease, box-shadow .2s ease, background .2s ease; }
+
+    /* 追加フォーム（gift_new のチェック行） */
+    .checks-row{
+      grid-column: 1 / -1;
+      display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+      margin:4px 0 8px;
+    }
+    .check{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 14px; border:1px solid var(--line); border-radius:999px;
+      background:#fff; font-size:16px; cursor:pointer; user-select:none;
+    }
+    .check input{ width:18px; height:18px; }
+
+    /* 年月日の横並び（gift_new） */
+    .date-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .date-row select{ flex:1; min-width:90px; }
+
+    /* ホーム中央寄せ */
+    .home-card{
+      text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px;
+    }
+    .home-card h1{ font-size:28px; color:var(--accent); margin-bottom:12px; }
+    .home-card p{ font-size:18px; margin:8px 0; }
+    .home-wrapper{ min-height:70vh; display:flex; align-items:center; justify-content:center; }
+
+    /* アクセシビリティ */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    @media (prefers-reduced-motion: reduce){
+      .btn{transition:none}
+      .btn:hover{transform:none; box-shadow:none}
+    }
+    .span-2 { grid-column: 1 / -1; }
+    /* 入力フォームを横並びにする（カテゴリ追加・贈り主追加など） */
+.form-inline {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap; /* 画面が狭いときは自動で折り返し */
+}
+.form-inline .form-group {
+  flex: 1 1 auto;  /* 入力欄を広げる */
+  min-width: 200px;
+}
+
+
+  </style>
 </head>
 <body>
   <div class="container">
-    <div class="nav">
-      <a href="/" class="btn">🏠ホーム</a>
-      <a href="/gifts" class="btn">📋ギフト一覧</a>
-      <a href="/gifts/new" class="btn primary">🎁ギフト追加</a>
-      <a href="/givers" class="btn">🫶送り主編集</a>
-      <a href="/categories" class="btn">🏷カテゴリ編集</a>
-      <a href="/calendar.ics" class="btn ghost">📅出力</a>
+    <nav class="nav" aria-label="メイン">
+      <a href="{{ url_for('home') }}"
+         class="btn {{ 'active' if request.path == url_for('home') else '' }}">🏠ホーム</a>
+      <a href="{{ url_for('gifts') }}"
+         class="btn {{ 'active' if request.path.startswith(url_for('gifts')) else '' }}">📋ギフト一覧</a>
+      <a href="{{ url_for('gift_new') }}"
+         class="btn primary {{ 'active' if request.path == url_for('gift_new') else '' }}">🎁ギフト追加</a>
+      <a href="{{ url_for('givers') }}"
+         class="btn {{ 'active' if request.path == url_for('givers') else '' }}">🫶送り主編集</a>
+      <a href="{{ url_for('categories') }}"
+         class="btn {{ 'active' if request.path == url_for('categories') else '' }}">🏷カテゴリ編集</a>
+      <a href="{{ url_for('calendar_feed') }}" class="btn ghost">📅出力</a>
+
       <div class="right"></div>
       {% if current_user.is_authenticated %}
         <span class="small">👋{{ current_user.email }}</span>
-        <a href="/logout" class="btn">ログアウト</a>
+        <a href="{{ url_for('logout') }}" class="btn">ログアウト</a>
       {% else %}
-        <a href="/login" class="btn">ログイン</a>
-        <a href="/register" class="btn">新規登録</a>
+        <a href="{{ url_for('login') }}" class="btn">ログイン</a>
+        <a href="{{ url_for('register') }}" class="btn">新規登録</a>
       {% endif %}
-    </div>
+    </nav>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for cat, msg in messages %}
-          <div class="alert {{cat}}">{{ msg }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    {% include 'partials/flash.html' %}
 
-    {% block content %}{% endblock %}
+    <main>
+      {% block content %}{% endblock %}
+    </main>
   </div>
 </body>
 </html>

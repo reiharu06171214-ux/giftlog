@@ -2,11 +2,17 @@
 {% block content %}
   <div class="card">
     <h2>ログイン</h2>
-    <form method="post" style="display:grid; gap:10px; max-width:420px;">
-      <label>メール<br><input type="email" name="email" required class="btn" style="width:100%; background:#0f172a; border:1px solid #2a3b5f; border-radius:10px; padding:8px;"></label>
-      <label>パスワード<br><input type="password" name="password" required class="btn" style="width:100%; background:#0f172a; border:1px solid #2a3b5f; border-radius:10px; padding:8px;"></label>
-      <div>
-        <button class="btn">ログイン</button>
+    <form method="post" class="grid" style="gap:10px; max-width:420px;">
+      <div class="form-group">
+        <label for="email">メール</label>
+        <input id="email" type="email" name="email" required >
+      </div>
+      <div class="form-group">
+        <label for="password">パスワード</label>
+        <input id="password" type="password" name="password" required >
+      </div>
+      <div class="form-actions">
+        <button class="btn primary" type="submit">ログイン</button>
         <a class="btn" href="/register">新規登録へ</a>
       </div>
     </form>

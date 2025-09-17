@@ -1,0 +1,32 @@
+{# 共通マクロ: 年月日セレクト #}
+{% macro date_select(prefix, years, today, form) -%}
+  <div class="date-row">
+    <select name="{{ prefix }}_year" aria-label="年">
+      {% for y in years %}
+        <option value="{{ y }}"
+          {% if (form.get(prefix ~ '_year') and form.get(prefix ~ '_year')|int == y)
+             or (not form.get(prefix ~ '_year') and today.year == y) %}selected{% endif %}>
+          {{ y }}年
+        </option>
+      {% endfor %}
+    </select>
+    <select name="{{ prefix }}_month" aria-label="月">
+      {% for m in range(1,13) %}
+        <option value="{{ m }}"
+          {% if (form.get(prefix ~ '_month') and form.get(prefix ~ '_month')|int == m)
+             or (not form.get(prefix ~ '_month') and today.month == m) %}selected{% endif %}>
+          {{ m }}月
+        </option>
+      {% endfor %}
+    </select>
+    <select name="{{ prefix }}_day" aria-label="日">
+      {% for d in range(1,32) %}
+        <option value="{{ d }}"
+          {% if (form.get(prefix ~ '_day') and form.get(prefix ~ '_day')|int == d)
+             or (not form.get(prefix ~ '_day') and today.day == d) %}selected{% endif %}>
+          {{ d }}日
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+{%- endmacro %}
