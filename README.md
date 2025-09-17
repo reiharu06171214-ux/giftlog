@@ -90,6 +90,9 @@ python app.py
 ### ギフト追加
 ![ギフト追加](screenshots/gift_new.png)
 
+### 贈り主の追加
+![贈り主の追加](screenshots/givers.png)
+
 ## 📜 ライセンス
 このプロジェクトは学習用に作成されたものです。  
 個人利用や改変は自由に行えます。
