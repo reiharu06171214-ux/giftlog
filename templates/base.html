@@ -35,27 +35,62 @@
     }
 
     .container{max-width:980px;margin:0 auto;padding:20px}
-
+    
     /* ナビ */
-    nav.nav{
-      display:flex; gap:10px; align-items:center; margin-bottom:16px;
-      padding:10px 14px; border-radius:16px;
-      background: linear-gradient(180deg, #ffe9f5, #ffdff0);
-      border:1px solid var(--line);
-      box-shadow: var(--shadow);
-      flex-wrap: wrap;
-    }
-    .right{margin-left:auto}
-    .btn{
-      padding:9px 14px; border-radius:999px;
-      background:#fff; border:1px solid var(--line);
-      color:var(--ink); text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
-    }
-    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
-    .btn.primary{ background: linear-gradient(180deg, var(--accent-2), var(--accent)); color:white; border:1px solid #ff69a6; }
-    .btn.ghost{ background:transparent; border-color: var(--accent-3); color:var(--accent); }
-    .btn.active{ outline: 2px solid var(--accent-2); outline-offset: 1px; }
+nav.nav{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom:16px;
+  padding:10px 14px;
+  border-radius:16px;
+  background: linear-gradient(180deg, #ffe9f5, #ffdff0);
+  border:1px solid var(--line);
+  box-shadow: var(--shadow);
+
+  /* 横並びを維持しつつ、はみ出したら横スクロール */
+  flex-wrap: nowrap;              /* 折り返し禁止 */
+  overflow-x: auto;               /* 横スクロール許可 */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* iOSでなめらか */
+  scrollbar-width: thin;          /* (任意) スクロールバー細く */
+}
+
+/* 右側の押し出し要素（メール/ログアウト）も縮ませない */
+nav.nav .right{ margin-left:auto; flex:0 0 auto; }
+
+/* ボタンは改行させず、縮ませない */
+nav.nav .btn{
+  padding:9px 14px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid var(--line);
+  color:var(--ink);
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+
+  white-space: nowrap;            /* ← 改行禁止 */
+  word-break: keep-all;           /* ← 日本語も極力分割しない */
+  line-break: strict;
+  flex-shrink: 0;                 /* ← 縮小禁止（押しつぶさない） */
+}
+
+/* (任意) ユーザー名などの小テキストも改行＆縮小を防止 */
+nav.nav .small{ white-space:nowrap; flex-shrink:0; }
+
+nav.nav .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+nav.nav .btn.primary{
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color:white; border:1px solid #ff69a6;
+}
+nav.nav .btn.ghost{ background:transparent; border-color: var(--accent-3); color:var(--accent); }
+nav.nav .btn.active{ outline: 2px solid var(--accent-2); outline-offset: 1px; }
+
+
+
 
     /* カード/見出し/通知 */
     .card{ background: var(--card); border:1px solid var(--line); border-radius:20px; padding:16px; margin:12px 0; box-shadow: var(--shadow); }
