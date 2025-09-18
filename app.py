@@ -290,7 +290,7 @@ def gift_edit(gift_id: int):
             flash("タイトルは必須だよ！", "error")
             givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
             categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
-            return render_template("gift_edit.html", title="編集", gift=gift, givers=givers, categories=categories), 400
+            return render_template("gift_form.html", title="編集", gift=gift, givers=givers, categories=categories), 400
 
         # 金額の下限チェック
         amount_val = request.form.get("amount_yen", type=int)
@@ -298,7 +298,7 @@ def gift_edit(gift_id: int):
             flash("金額は0以上で入力してね。", "error")
             givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
             categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
-            return render_template("gift_edit.html", title="編集", gift=gift, givers=givers, categories=categories), 400
+            return render_template("gift_form.html", title="編集", gift=gift, givers=givers, categories=categories), 400
 
         gift.title = new_title or gift.title
         gift.memo = request.form.get("memo", "").strip()
@@ -315,8 +315,7 @@ def gift_edit(gift_id: int):
 
     givers = Giver.query.filter_by(user_id=current_user.id).order_by(Giver.name).all()
     categories = Category.query.filter_by(user_id=current_user.id).order_by(Category.name).all()
-    # テンプレ名は gift_edit.html に合わせています（必要なら gift_form.html に変えてOK）
-    return render_template("gift_edit.html", title="ギフト編集", gift=gift, givers=givers, categories=categories)
+    return render_template("gift_form.html", title="ギフト編集", gift=gift, givers=givers, categories=categories)
 
 # 贈り主 & カテゴリ 管理
 @app.route("/givers", methods=["GET", "POST"])
