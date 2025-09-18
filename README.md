@@ -97,17 +97,17 @@ python app.py
 このプロジェクトは学習用に作成されたものです。  
 個人利用や改変は自由に行えます。
 
+
 ## 開発概要
 
-開発期間：約3週間（2025年9月上旬〜下旬）
+- **開発期間**：約3週間（2025年9月上旬〜下旬）  
 
-使用技術
-・バックエンド：Python, Flask, SQLAlchemy, Flask-Login
-・フロントエンド：HTML, CSS
-・その他：WTForms, Jinja2, selectinload
-・開発環境：Python 3.x / VSCode / GitHub
+- **使用技術**  
+  - バックエンド：Python, Flask, SQLAlchemy, Flask-Login  
+  - フロントエンド：HTML, CSS  
+  - その他：WTForms, Jinja2, selectinload  
+  - 開発環境：Python 3.x / VSCode / GitHub  
 
-工夫した点
-
-・初回ログイン時にカテゴリ（食品・化粧品など）を自動登録
-・ChatGPTを積極的に活用し、実装方針の検討、エラー解決、コードレビュー、UI改善アイデアの反映などを行った。AIを開発パートナーとして効率的に学習・開発を進めた
+## 工夫した点
+- 初回ログイン時にカテゴリ（食品・化粧品など）を自動登録  
+- ChatGPTを積極的に活用し、実装方針の検討、エラー解決、コードレビュー、UI改善アイデアの反映などを行った。AIを開発パートナーとして効率的に学習・開発を進めた  
